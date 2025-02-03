@@ -417,11 +417,12 @@ export abstract class BaseAuth {
    * @returns A promise fulfilled with the user
    *   data corresponding to the newly created user.
    */
-  public createUser(properties: CreateRequest): Promise<UserRecord> {
+  public createUser(properties: CreateRequest,noFetchUserRecord:boolean=false): Promise<UserRecord|null> {
     return this.authRequestHandler.createNewAccount(properties)
       .then((uid) => {
         // Return the corresponding user record.
-        return this.getUser(uid);
+        if(noFetchUserRecord) return this.getUser(uid);
+        return null
       })
       .catch((error) => {
         if (error.code === 'auth/user-not-found') {
@@ -531,7 +532,7 @@ export abstract class BaseAuth {
    * @returns A promise fulfilled with the
    *   updated user data.
    */
-  public updateUser(uid: string, properties: UpdateRequest): Promise<UserRecord> {
+  public updateUser(uid: string, properties: UpdateRequest,noFetchUserRecord:boolean=false): Promise<UserRecord | null> {
     // Although we don't really advertise it, we want to also handle linking of
     // non-federated idps with this call. So if we detect one of them, we'll
     // adjust the properties parameter appropriately. This *does* imply that a
@@ -579,7 +580,9 @@ export abstract class BaseAuth {
     return this.authRequestHandler.updateExistingAccount(uid, properties)
       .then((existingUid) => {
         // Return the corresponding user record.
+       if(noFetchUserRecord)
         return this.getUser(existingUid);
+      return null
       });
   }
 
